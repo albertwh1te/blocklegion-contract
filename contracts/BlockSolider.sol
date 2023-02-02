@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "./base64.sol";
 
-contract BlockSolider is ERC721Enumerable, Ownable, ReentrancyGuard {
+contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
     /***********
      * LIBRARY *
      ***********/
@@ -25,6 +25,12 @@ contract BlockSolider is ERC721Enumerable, Ownable, ReentrancyGuard {
         ATTACK
     }
 
+    enum SoldierClass {
+        KNIGHT,
+        INFANTRY,
+        ARCHER
+    }
+
     uint public next_solider;
 
     uint public constant FREE_RECRUIT_LIMIT = 2;
@@ -32,8 +38,10 @@ contract BlockSolider is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     mapping(uint => uint) public level;
     mapping(uint => string) public name;
-    mapping(uint => uint) public task;
+    mapping(uint => TASK) public task;
     mapping(address => uint) public freemint;
+    mapping(uint => uint) public birthblock;
+    mapping(uint => SoldierClass) public class;
 
     /*********
      * EVENT *
@@ -41,42 +49,108 @@ contract BlockSolider is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     event Recruit(address indexed owner, uint soliderId);
 
-    constructor() ERC721("BlockSolider", "BS") {}
+    constructor() ERC721("BlockSoldier", "BS") {}
 
-    function _recruit() private {
+    /********************
+     * PRIVATE FUNCTION *
+     ********************/
+
+    function _recruit(uint _class) private {
         uint _next_solider = next_solider;
-        level[_next_solider] = 1;
+
+        level[_next_solider] = 0;
+
         name[_next_solider] = string.concat(
             "Solider #",
             Strings.toString(_next_solider)
         );
-        task[_next_solider] = uint(TASK.ATTACK);
+
+        task[_next_solider] = TASK.ATTACK;
+
+        birthblock[_next_solider] = block.number;
+
+        class[_next_solider] = SoldierClass(_class);
+
         _safeMint(msg.sender, _next_solider);
         emit Recruit(msg.sender, _next_solider);
         next_solider = next_solider.add(1);
+    }
+
+    /*******************
+     * PUBLIC FUNCTION *
+     *******************/
+
+    function classes(SoldierClass _class) public pure returns (string memory) {
+        if (_class == SoldierClass.ARCHER) {
+            return "Archer";
+        }
+        if (_class == SoldierClass.KNIGHT) {
+            return "Knight";
+        }
+        if (_class == SoldierClass.INFANTRY) {
+            return "Infantry";
+        }
+    }
+
+    function sqrt(uint x) public pure returns (uint y) {
+        uint z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+        return y;
+    }
+
+    function get_solider_level(
+        uint _solider
+    ) public view returns (uint current_level) {
+        uint xp = block.number.sub(birthblock[_solider]);
+
+        current_level = sqrt(
+            uint(175).div(2).mul(uint(175).div(2)).add(uint(50).mul(xp))
+        ).sub(uint(175).div(2)).div(2);
+    }
+
+    function block_required_to_next_level(
+        uint _soldier
+    ) public view returns (uint block_required) {
+        uint _level = get_solider_level(_soldier);
+
+        block_required =
+            uint(25).div(2).mul(_level.mul(_level)) +
+            uint(175).div(2).mul(_level);
     }
 
     /*********************
      * EXTERNAL FUNCTION *
      *********************/
 
-    function free_recruit() external nonReentrant {
+    function freeRecruit() external nonReentrant {
         require(
             freemint[msg.sender] < FREE_RECRUIT_LIMIT,
             "FREE_RECRUIT_LIMIT reached !"
         );
         freemint[msg.sender] = freemint[msg.sender].add(2);
-        _recruit();
-        _recruit();
+        _recruit(0);
+        _recruit(1);
     }
 
-    function recruit(uint recruit_number) external payable nonReentrant {
+    function recruitClass(uint _class) external payable nonReentrant {
+        require(msg.value == RECRUIT_PRICE, "wrong msg.value for mint");
+        _recruit(_class);
+    }
+
+    function recruit(
+        uint recruit_number,
+        uint _class
+    ) external payable nonReentrant {
         require(
             msg.value == RECRUIT_PRICE.mul(recruit_number),
             "wrong msg.value for mint"
         );
         for (uint i = 0; i < recruit_number; i++) {
-            _recruit();
+            _recruit(_class);
         }
     }
 
@@ -84,118 +158,88 @@ contract BlockSolider is ERC721Enumerable, Ownable, ReentrancyGuard {
      * TOKENURI AND SVG *
      ********************/
 
-    // function tokenURI(
-    //     uint256 _solider 
-    // ) public view override returns (string memory) {
-    //     string memory output = drawSvg(_summoner);
-    //     string memory attribute = getAttribute(_summoner);
-    //     string memory json = Base64.encode(
-    //         bytes(
-    //             string.concat(
-    //                     '{"name": name[_solider],
-    //                     '",',
-    //                     attribute,
-    //                     ', "description": "BlockSolider is a fully on-chain MMORPG, with all game logic and resources stored on the blockchain.", "image": "data:image/svg+xml;base64,',
-    //                     Base64.encode(bytes(output)),
-    //                     '"}'
-    //                 )
-    //             )
-    //         )
-    //     );
-    //     output = string(
-    //         abi.encodePacked("data:application/json;base64,", json)
-    //     );
+    function tokenURI(
+        uint256 _solider
+    ) public view override returns (string memory) {
+        string memory output = drawSvg(_solider);
+        string memory attribute = getAttribute(_solider);
+        string memory json = Base64.encode(
+            bytes(
+                string.concat(
+                    '{"name":',
+                    name[_solider],
+                    '",',
+                    attribute,
+                    ', "description": "BlockSolider is a fully on-chain game, with all game logic and resources stored on the blockchain.", "image": "data:image/svg+xml;base64,',
+                    Base64.encode(bytes(output)),
+                    '"}'
+                )
+            )
+        );
+        output = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
 
-    //     return output;
-    // }
+        return output;
+    }
 
-    // function getAttribute(
-    //     uint256 _summoner
-    // ) public view returns (string memory attribute) {
-    //     string memory classAttr = string(
-    //         abi.encodePacked(
-    //             '{"trait_type": "Class","value":"',
-    //             classes(class[_summoner]),
-    //             '"},'
-    //         )
-    //     );
-    //     string memory levelAttr = string(
-    //         abi.encodePacked(
-    //             '{"trait_type": "Level","value":',
-    //             toString(level[_summoner]),
-    //             "},"
-    //         )
-    //     );
+    function getAttribute(
+        uint256 _solider
+    ) public view returns (string memory attribute) {
+        string memory classAttr = string.concat(
+            '{"trait_type": "typer","value":"',
+            classes(class[_solider]),
+            '"},'
+        );
 
-    //     string memory fractAttr = string(
-    //         abi.encodePacked(
-    //             '{"trait_type": "Fraction","value":"',
-    //             factions(faction[_summoner]),
-    //             '"},'
-    //         )
-    //     );
+        string memory levelAttr = string(
+            abi.encodePacked(
+                '{"trait_type": "Level","value":',
+                get_solider_level(_solider),
+                "}"
+            )
+        );
 
-    //     string memory rarityAttr = string(
-    //         abi.encodePacked(
-    //             '{"trait_type": "Rarity","value":"',
-    //             rarities(rarity[_summoner]),
-    //             '"}'
-    //         )
-    //     );
+        attribute = string.concat('"attributes":[', classAttr, levelAttr, "]");
+    }
 
-    //     attribute = string(
-    //         abi.encodePacked(
-    //             '"attributes":[',
-    //             classAttr,
-    //             fractAttr,
-    //             levelAttr,
-    //             rarityAttr,
-    //             "]"
-    //         )
-    //     );
-    // }
+    function getSVGContent(
+        uint256 _soldier
+    ) public view returns (string memory content) {
+        string memory soldier_name = string.concat("Name", " ", name[_soldier]);
 
-    // function getSVGContent(
-    //     uint256 _summoner
-    // ) public view returns (string memory content) {
-    //     string memory classStr = string(
-    //         abi.encodePacked("Class", " ", classes(class[_summoner]))
-    //     );
+        string memory soldier_type = string.concat(
+            "Type",
+            " ",
+            classes(class[_soldier])
+        );
 
-    //     string memory factionStr = string(
-    //         abi.encodePacked("Faction", " ", factions(faction[_summoner]))
-    //     );
+        string memory soldier_level = string.concat(
+            "Level",
+            " ",
+            Strings.toString(get_solider_level(_soldier))
+        );
 
-    //     string memory levelStr = string(
-    //         abi.encodePacked("Level", " ", toString(level[_summoner]))
-    //     );
+        content = string(
+            abi.encodePacked(
+                soldier_name,
+                '</text><text x="10" y="40" class="base">',
+                soldier_type,
+                '</text><text x="10" y="60" class="base">',
+                soldier_level
+            )
+        );
+    }
 
-    //     string memory rarityStr = string(
-    //         abi.encodePacked("Rarity", " ", rarities(rarity[_summoner]))
-    //     );
+    function drawSvg(
+        uint256 _soldier
+    ) public view returns (string memory output) {
+        string
+            memory head = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
 
-    //     content = string(
-    //         abi.encodePacked(
-    //             classStr,
-    //             '</text><text x="10" y="40" class="base">',
-    //             factionStr,
-    //             '</text><text x="10" y="60" class="base">',
-    //             levelStr,
-    //             '</text><text x="10" y="80" class="base">',
-    //             rarityStr
-    //         )
-    //     );
-    // }
+        string memory content = getSVGContent(_soldier);
+        string memory tail = "</text></svg>";
 
-    // function drawSvg(
-    //     uint256 _summoner
-    // ) public view returns (string memory output) {
-    //     string
-    //         memory head = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
-
-    //     string memory content = getSVGContent(_summoner);
-    //     string memory tail = "</text></svg>";
-
-    //     output = string(abi.encodePacked(head, content, tail));
-    // }
+        output = string(abi.encodePacked(head, content, tail));
+    }
 }
