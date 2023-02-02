@@ -37,6 +37,10 @@ const config: HardhatUserConfig = {
 
   solidity: "0.8.17",
 
+  mocha: {
+    timeout: 100000000,
+  },
+
   etherscan: {
     // arbiscan apikey
     apiKey: "9WEYJEV974N4CG5X2DGRCJQ55BSKUTMH8T",
