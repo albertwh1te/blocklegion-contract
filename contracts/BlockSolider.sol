@@ -16,10 +16,6 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     using SafeMath for uint;
 
-    /**************************
-     * PUBLIC GLOBAL VARIABLE *
-     **************************/
-
     enum TASK {
         DEDEND,
         ATTACK
@@ -31,10 +27,16 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
         ARCHER
     }
 
+    /**************************
+     * PUBLIC GLOBAL VARIABLE *
+     **************************/
+
     uint public next_solider;
 
     uint public constant FREE_RECRUIT_LIMIT = 2;
     uint public constant RECRUIT_PRICE = 0.005 ether;
+
+    address public LEGION;
 
     mapping(uint => uint) public level;
     mapping(uint => string) public name;
@@ -126,6 +128,16 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
      * EXTERNAL FUNCTION *
      *********************/
 
+    function setLegionAddress(address _legion) external onlyOwner {
+        require(LEGION == address(0), "LEGION already set");
+        LEGION = _legion;
+    }
+
+    function withdraw() external onlyOwner {
+        uint balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
+
     function freeRecruit() external nonReentrant {
         require(
             freemint[msg.sender] < FREE_RECRUIT_LIMIT,
@@ -154,6 +166,16 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
         }
     }
 
+    function setSoldierName(string memory _name, uint _id) external {
+        require(
+            ownerOf(_id) == msg.sender,
+            "You are not the owner of this soldier"
+        );
+        require(bytes(_name).length <= 20, "Name too long");
+        require(bytes(_name).length > 0, "Name too short");
+        name[_id] = _name;
+    }
+
     /********************
      * TOKENURI AND SVG *
      ********************/
@@ -166,7 +188,7 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
         string memory json = Base64.encode(
             bytes(
                 string.concat(
-                    '{"name":',
+                    '{"name":"',
                     name[_solider],
                     '",',
                     attribute,
@@ -192,12 +214,10 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
             '"},'
         );
 
-        string memory levelAttr = string(
-            abi.encodePacked(
-                '{"trait_type": "Level","value":',
-                get_solider_level(_solider),
-                "}"
-            )
+        string memory levelAttr = string.concat(
+            '{"trait_type": "Level","value":',
+            Strings.toString(get_solider_level(_solider)),
+            "}"
         );
 
         attribute = string.concat('"attributes":[', classAttr, levelAttr, "]");
@@ -206,16 +226,20 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
     function getSVGContent(
         uint256 _soldier
     ) public view returns (string memory content) {
-        string memory soldier_name = string.concat("Name", " ", name[_soldier]);
+        string memory soldier_name = string.concat(
+            "Name:",
+            " ",
+            name[_soldier]
+        );
 
         string memory soldier_type = string.concat(
-            "Type",
+            "Type:",
             " ",
             classes(class[_soldier])
         );
 
         string memory soldier_level = string.concat(
-            "Level",
+            "Level:",
             " ",
             Strings.toString(get_solider_level(_soldier))
         );

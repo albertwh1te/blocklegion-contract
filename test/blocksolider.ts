@@ -1,4 +1,5 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+const { mine } = require("@nomicfoundation/hardhat-network-helpers");
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -53,7 +54,6 @@ describe("BlockSolider", function () {
       await solider.recruitClass(2, {
         value: ethers.utils.parseEther("0.005"),
       });
-
     });
 
     it("Should Mint 1 Solider with 0.001", async function () {
@@ -82,6 +82,27 @@ describe("BlockSolider", function () {
       await expect(
         solider.recruit(5, 1, { value: ethers.utils.parseEther("1") })
       ).to.be.rejectedWith("wrong msg.value for mint");
+    });
+
+    it("Check Token URI Is Right format", async function () {
+      const { solider, owner, otherAccount } = await loadFixture(deploySolider);
+
+      await solider.recruit(1, 1, { value: ethers.utils.parseEther("0.005") });
+
+      await solider.setSoldierName("test", 0);
+
+      await mine(3600 * 3 * 24 * 365);
+
+      let data = await solider.tokenURI(0);
+
+      let raw = Buffer.from(data.substring(29), "base64").toString();
+
+      console.log(raw);
+
+      let result = JSON.parse(raw);
+
+      console.log(result);
+
     });
   });
 });
