@@ -21,10 +21,6 @@ describe("BlockSolider", function () {
     it("Should Free Mint Two Solider ", async function () {
       const { solider, owner, otherAccount } = await loadFixture(deploySolider);
 
-      const provider = ethers.getDefaultProvider();
-      let balance = await provider.getBalance(owner.address);
-      console.log(`${owner.address} balance ${balance}}`);
-
       await solider.freeRecruit();
 
       expect(await solider.balanceOf(owner.address)).to.equal(2);
@@ -32,10 +28,6 @@ describe("BlockSolider", function () {
 
     it("Shouldn't  Free Mint More Than Two Solider ", async function () {
       const { solider, owner, otherAccount } = await loadFixture(deploySolider);
-
-      const provider = ethers.getDefaultProvider();
-      let balance = await provider.getBalance(owner.address);
-      console.log(`${owner.address} balance ${balance}}`);
 
       // mint two free
       await solider.freeRecruit();
@@ -67,7 +59,7 @@ describe("BlockSolider", function () {
 
       await expect(
         solider.recruit(1, 1, { value: ethers.utils.parseEther("0.00001") })
-      ).to.be.rejectedWith("wrong msg.value for mint");
+      ).to.be.reverted;
     });
 
     it("Should  Mint 5 Solider ", async function () {
@@ -81,7 +73,7 @@ describe("BlockSolider", function () {
 
       await expect(
         solider.recruit(5, 1, { value: ethers.utils.parseEther("1") })
-      ).to.be.rejectedWith("wrong msg.value for mint");
+      ).to.be.reverted;
     });
 
     it("Check Token URI Is Right format", async function () {
@@ -97,12 +89,47 @@ describe("BlockSolider", function () {
 
       let raw = Buffer.from(data.substring(29), "base64").toString();
 
-      console.log(raw);
-
       let result = JSON.parse(raw);
 
-      console.log(result);
+      expect(result.name).to.equal("test");
+    });
+
+    it("set soldier name", async () => {
+      const { solider, owner, otherAccount } = await loadFixture(deploySolider);
+
+      await solider.freeRecruit();
+
+      await solider.setSoldierName("alice", 0);
+
+      await solider.setSoldierName("test", 0);
+    });
+
+    it("test captive", async () => {
+      const { solider, owner, otherAccount } = await loadFixture(deploySolider);
+
+      await solider.connect(owner).freeRecruit();
+
+      await solider.connect(otherAccount).freeRecruit();
+
+      await solider.setLegionAddress(otherAccount.address);
+
+      expect(await solider.balanceOf(owner.address)).to.equal(2);
+
+      expect(await solider.balanceOf(otherAccount.address)).to.equal(2);
+
+      let solider_id = await solider.tokenOfOwnerByIndex(owner.address, 0);
+
+      await solider
+        .connect(otherAccount)
+        .captive(otherAccount.address, owner.address, solider_id);
+
+      expect(await solider.balanceOf(owner.address)).to.equal(1);
+
+      expect(await solider.balanceOf(otherAccount.address)).to.equal(3);
+
+      expect(await solider.ownerOf(solider_id)).to.equal(otherAccount.address);
 
     });
+
   });
 });

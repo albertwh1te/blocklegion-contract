@@ -149,7 +149,7 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
     }
 
     function recruitClass(uint _class) external payable nonReentrant {
-        require(msg.value == RECRUIT_PRICE, "wrong msg.value for mint");
+        require(msg.value == RECRUIT_PRICE, "Wrong msg.value for mint");
         _recruit(_class);
     }
 
@@ -159,7 +159,7 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
     ) external payable nonReentrant {
         require(
             msg.value == RECRUIT_PRICE.mul(recruit_number),
-            "wrong msg.value for mint"
+            "Wrong msg.value for mint"
         );
         for (uint i = 0; i < recruit_number; i++) {
             _recruit(_class);
@@ -174,6 +174,19 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
         require(bytes(_name).length <= 20, "Name too long");
         require(bytes(_name).length > 0, "Name too short");
         name[_id] = _name;
+    }
+
+    function captive(address _winner, address _loser, uint _id) external {
+        require(
+            msg.sender == LEGION,
+            "Only LEGION contract can call this function"
+        );
+        // require(balanceOf(_loser) > 0, "Loser have no solider");
+        require(
+            ownerOf(_id) == _loser,
+            "Loser are not the owner of this soldier"
+        );
+        _transfer(_loser, _winner, _id);
     }
 
     /********************
