@@ -246,7 +246,7 @@ describe("BlockSolider", function () {
       expect(await solider.balanceOf(owner.address)).to.equal(5);
       expect(await solider.balanceOf(otherAccount.address)).to.equal(0);
 
-      await expect(legion.war(otherAccount.address)).to.be.reverted;
+      await expect(legion.war(otherAccount.address)).to.be.revertedWith('No soldier');
 
     });
   });
