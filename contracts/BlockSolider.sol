@@ -189,6 +189,15 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
         _transfer(_loser, _winner, _id);
     }
 
+    function changeTask(uint _id, uint _task) external {
+        require(
+            ownerOf(_id) == msg.sender,
+            "You are not the owner of this soldier"
+        );
+        require(_task < 3, "Task not found");
+        task[_id] = TASK(_task);
+    }
+
     /********************
      * TOKENURI AND SVG *
      ********************/

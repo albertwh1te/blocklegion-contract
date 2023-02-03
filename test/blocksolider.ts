@@ -104,6 +104,22 @@ describe("BlockSolider", function () {
       await solider.setSoldierName("test", 0);
     });
 
+    it("test change task", async () => {
+      const { solider, owner, otherAccount } = await loadFixture(deploySolider);
+
+      await solider.freeRecruit();
+
+      let oldTask = await solider.task(0);
+
+      expect(oldTask).to.equal(1);
+
+      await solider.changeTask(0, 0);
+
+      let task = await solider.task(0);
+
+      expect(task).to.equal(0);
+    });
+
     it("test captive", async () => {
       const { solider, owner, otherAccount } = await loadFixture(deploySolider);
 
@@ -128,7 +144,6 @@ describe("BlockSolider", function () {
       expect(await solider.balanceOf(otherAccount.address)).to.equal(3);
 
       expect(await solider.ownerOf(solider_id)).to.equal(otherAccount.address);
-
     });
 
   });
