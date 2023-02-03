@@ -2,13 +2,19 @@ import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 const { mine } = require("@nomicfoundation/hardhat-network-helpers");
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
+
+function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
 
 describe("BlockSolider", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deploySolider() {
-    // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
     const Solider = await ethers.getContractFactory("BlockSoldier");
@@ -17,7 +23,26 @@ describe("BlockSolider", function () {
     return { solider, owner, otherAccount };
   }
 
-  describe("Deployment", function () {
+  async function deployAll() {
+    const [owner, otherAccount] = await ethers.getSigners();
+
+    const Solider = await ethers.getContractFactory("BlockSoldier");
+    const solider = await Solider.deploy();
+
+    const Battle = await ethers.getContractFactory("BattleSystem");
+    // uint
+    const battle = await Battle.deploy(solider.address);
+
+    const Legion = await ethers.getContractFactory("BlockLegion");
+    const legion = await Legion.deploy(solider.address);
+
+    await legion.setBattleSystem(battle.address);
+    await solider.setLegionAddress(legion.address);
+
+    return { solider, battle, legion, owner, otherAccount };
+  }
+
+  describe("Soldier Function", function () {
     it("Should Free Mint Two Solider ", async function () {
       const { solider, owner, otherAccount } = await loadFixture(deploySolider);
 
@@ -118,6 +143,12 @@ describe("BlockSolider", function () {
       let task = await solider.task(0);
 
       expect(task).to.equal(0);
+
+      await solider.changeTask(0, 1);
+
+      task = await solider.task(0);
+
+      expect(task).to.equal(1);
     });
 
     it("test captive", async () => {
@@ -145,6 +176,78 @@ describe("BlockSolider", function () {
 
       expect(await solider.ownerOf(solider_id)).to.equal(otherAccount.address);
     });
+  });
 
+  describe("Legion Function", function () {
+    it("Legion: check ap and dp", async () => {
+      const { solider, battle, legion, owner, otherAccount } =
+        await loadFixture(deployAll);
+
+      await solider.freeRecruit();
+
+      await solider.recruitClass(2, {
+        value: ethers.utils.parseEther("0.005"),
+      });
+
+      let ap = await legion.getAttackPower(owner.address);
+      let dp = await legion.getDefensePower(owner.address);
+
+      expect(ap).to.equal(0);
+      expect(dp).to.equal(0);
+
+      await mine(getRandomInt(10, 10000));
+
+      ap = await legion.getAttackPower(owner.address);
+      dp = await legion.getDefensePower(owner.address);
+
+      let offlineAp: BigNumber = BigNumber.from(0);
+      let offlineDp = BigNumber.from(0);
+
+      for (let index = 0; index < 3; index++) {
+        let sap = await battle.getSoldierAttackPower(index);
+        let dap = await battle.getSoldierDefensePower(index);
+        let task = await solider.task(index);
+        if (task == 0) {
+          offlineDp = offlineDp.add(dap);
+        } else {
+          offlineAp = offlineAp.add(sap);
+        }
+      }
+      expect(offlineAp).to.equal(ap);
+      expect(offlineDp).to.equal(dp);
+    });
+
+    it("Legion: check balance after battle", async () => {
+      const { solider, battle, legion, owner, otherAccount } =
+        await loadFixture(deployAll);
+
+      await solider.freeRecruit();
+
+      await solider.recruitClass(2, {
+        value: ethers.utils.parseEther("0.005"),
+      });
+
+      await solider.connect(otherAccount).freeRecruit();
+
+      expect(await solider.balanceOf(owner.address)).to.equal(3);
+      expect(await solider.balanceOf(otherAccount.address)).to.equal(2);
+
+      await mine(getRandomInt(10, 10000));
+
+      await legion.war(otherAccount.address);
+
+      expect(await solider.balanceOf(owner.address)).to.equal(4);
+      expect(await solider.balanceOf(otherAccount.address)).to.equal(1);
+
+      await mine(getRandomInt(10, 10000));
+
+      await legion.war(otherAccount.address);
+
+      expect(await solider.balanceOf(owner.address)).to.equal(5);
+      expect(await solider.balanceOf(otherAccount.address)).to.equal(0);
+
+      await expect(legion.war(otherAccount.address)).to.be.reverted;
+
+    });
   });
 });

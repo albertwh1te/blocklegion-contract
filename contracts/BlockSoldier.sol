@@ -16,6 +16,10 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     using SafeMath for uint;
 
+    /********
+     * ENUM *
+     ********/
+
     enum TASK {
         DEDEND,
         ATTACK
@@ -82,15 +86,17 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
      * PUBLIC FUNCTION *
      *******************/
 
-    function classes(SoldierClass _class) public pure returns (string memory) {
+    function classes(
+        SoldierClass _class
+    ) public pure returns (string memory classStr) {
         if (_class == SoldierClass.ARCHER) {
-            return "Archer";
+            classStr = "Archer";
         }
         if (_class == SoldierClass.KNIGHT) {
-            return "Knight";
+            classStr = "Knight";
         }
         if (_class == SoldierClass.INFANTRY) {
-            return "Infantry";
+            classStr = "Infantry";
         }
     }
 
@@ -194,7 +200,9 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
             ownerOf(_id) == msg.sender,
             "You are not the owner of this soldier"
         );
+
         require(_task < 3, "Task not found");
+
         task[_id] = TASK(_task);
     }
 
