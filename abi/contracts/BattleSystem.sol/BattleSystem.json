@@ -1,0 +1,64 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_soldier",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_soliderId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSoldierAttackPower",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "attackPower",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_soliderId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSoldierDefensePower",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "defensePower",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "soldier",
+    "outputs": [
+      {
+        "internalType": "contract IBlockSoldier",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

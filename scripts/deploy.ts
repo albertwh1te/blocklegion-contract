@@ -1,13 +1,24 @@
 import { ethers } from "hardhat";
 
 async function main() {
+  const Soldier = await ethers.getContractFactory("BlockSoldier");
+  const soldier = await Soldier.deploy();
 
-  const Lock = await ethers.getContractFactory("BlockSoldier");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const Battle = await ethers.getContractFactory("BattleSystem");
+  // uint
+  const battle = await Battle.deploy(soldier.address);
 
-  await lock.deployed();
+  const Legion = await ethers.getContractFactory("BlockLegion");
+  const legion = await Legion.deploy(soldier.address);
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
+  await legion.setBattleSystem(battle.address);
+  await soldier.setLegionAddress(legion.address);
+
+  await soldier.freeRecruit();
+
+  console.log(
+    `soldier: ${soldier.address} \nbattle: ${battle.address} \nlegion: ${legion.address}`
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
