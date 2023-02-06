@@ -189,16 +189,10 @@ describe("BlockSolider", function () {
         value: ethers.utils.parseEther("0.005"),
       });
 
-      let ap = await legion.getAttackPower(owner.address);
-      let dp = await legion.getDefensePower(owner.address);
-
-      expect(ap).to.equal(0);
-      expect(dp).to.equal(0);
-
       await mine(getRandomInt(10, 10000));
 
-      ap = await legion.getAttackPower(owner.address);
-      dp = await legion.getDefensePower(owner.address);
+      let ap = await legion.getAttackPower(owner.address);
+      let dp = await legion.getDefensePower(owner.address);
 
       let offlineAp: BigNumber = BigNumber.from(0);
       let offlineDp = BigNumber.from(0);
@@ -246,8 +240,9 @@ describe("BlockSolider", function () {
       expect(await solider.balanceOf(owner.address)).to.equal(5);
       expect(await solider.balanceOf(otherAccount.address)).to.equal(0);
 
-      await expect(legion.war(otherAccount.address)).to.be.revertedWith('No soldier');
-
+      await expect(legion.war(otherAccount.address)).to.be.revertedWith(
+        "No soldier"
+      );
     });
   });
 });

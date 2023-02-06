@@ -29,13 +29,12 @@ contract BlockLegion is Ownable {
      * EVENT *
      *********/
 
-    event AttackSuccess(
+    event WarOutcome(
         address indexed attacker,
         address indexed defender,
+        uint outcome,
         uint captive_id
     );
-    event DefendSuccess(address indexed attacker, address indexed defender);
-    event Draw(address indexed attacker, address indexed defender);
 
     constructor(address _soldier) {
         soldier = IBlockSoldier(_soldier);
@@ -85,7 +84,7 @@ contract BlockLegion is Ownable {
         }
     }
 
-    function war(address defender) external returns (uint) {
+    function war(address defender) external returns (uint, uint) {
         address attacker = msg.sender;
         require(attacker != defender, "Can't attack yourself");
         require(soldier.balanceOf(attacker) > 0, "No soldier");
@@ -94,7 +93,6 @@ contract BlockLegion is Ownable {
         require(nextDefendTime[defender] <= block.timestamp, "Still in Shield");
 
         if (getAttackPower(attacker) > getDefensePower(defender)) {
-
             uint index = soldier.balanceOf(defender).sub(1);
 
             uint soldier_index = soldier.tokenOfOwnerByIndex(defender, index);
@@ -105,21 +103,19 @@ contract BlockLegion is Ownable {
 
             nextDefendTime[defender] = block.timestamp.add(30 minutes);
 
-            emit AttackSuccess(attacker, defender, soldier_index);
+            emit WarOutcome(attacker, defender, 0, soldier_index);
 
-            return 0;
-
+            return (0, soldier_index);
         } else if (getAttackPower(attacker) < getDefensePower(defender)) {
-
             nextDefendTime[defender] = block.timestamp.add(30 minutes);
 
-            emit DefendSuccess(attacker, defender);
+            emit WarOutcome(attacker, defender, 1, 0);
 
-            return 1;
-
+            return (1, 0);
         } else {
-            emit Draw(attacker, defender);
-            return 2;
+            emit WarOutcome(attacker, defender, 2, 0);
+
+            return (2, 0);
         }
     }
 }
