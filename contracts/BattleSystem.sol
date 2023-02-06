@@ -29,12 +29,11 @@ contract BattleSystem is IBattleSystem {
      * EXTERNAL FUNCTION *
      *********************/
 
-
     function getSoldierAttackPower(
         uint _soliderId
     ) public view returns (uint attackPower) {
         attackPower =
-            soldier.get_solider_level(_soliderId) *
+            soldier.get_solider_level(_soliderId).add(1) *
             uint(3).sub(soldier.class(_soliderId));
     }
 
@@ -42,8 +41,7 @@ contract BattleSystem is IBattleSystem {
         uint _soliderId
     ) public view returns (uint defensePower) {
         defensePower =
-            soldier.get_solider_level(_soliderId) *
+            soldier.get_solider_level(_soliderId).add(1) *
             soldier.class(_soliderId).add(1);
     }
-
 }

@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 require("hardhat-abi-exporter");
 
 let dev_account = process.env.dev_account!;
+let dev_2_account = process.env.dev_2_account!;
 let etherscan_api_key = process.env.etherscan_api_key!;
 
 const config: HardhatUserConfig = {
@@ -10,8 +11,8 @@ const config: HardhatUserConfig = {
   // defaultNetwork: "ftmtest",
   // defaultNetwork: "ftm",
   //defaultNetwork: "mumbai",
-  // defaultNetwork: "localhost",
   // defaultNetwork: "hardhat",
+  // defaultNetwork: "localhost",
   defaultNetwork: "goerli",
 
   solidity: "0.8.17",
@@ -27,7 +28,7 @@ const config: HardhatUserConfig = {
   networks: {
     goerli: {
       url: "https://eth-goerli.g.alchemy.com/v2/HQWv21aafzE7QD37RQs9d4-BAO-_2-tL",
-      accounts: [dev_account],
+      accounts: [dev_account, dev_2_account],
     },
 
     ftm: {

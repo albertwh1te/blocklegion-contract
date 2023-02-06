@@ -42,7 +42,6 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     address public LEGION;
 
-    mapping(uint => uint) public level;
     mapping(uint => string) public name;
     mapping(uint => TASK) public task;
     mapping(address => uint) public freemint;
@@ -63,8 +62,6 @@ contract BlockSoldier is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     function _recruit(uint _class) private {
         uint _next_solider = next_solider;
-
-        level[_next_solider] = 0;
 
         name[_next_solider] = string.concat(
             "Solider #",

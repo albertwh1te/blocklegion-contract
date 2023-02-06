@@ -85,7 +85,7 @@ contract BlockLegion is Ownable {
         }
     }
 
-    function war(address defender) external {
+    function war(address defender) external returns (uint) {
         address attacker = msg.sender;
         require(attacker != defender, "Can't attack yourself");
         require(soldier.balanceOf(attacker) > 0, "No soldier");
@@ -107,16 +107,19 @@ contract BlockLegion is Ownable {
 
             emit AttackSuccess(attacker, defender, soldier_index);
 
+            return 0;
+
         } else if (getAttackPower(attacker) < getDefensePower(defender)) {
 
             nextDefendTime[defender] = block.timestamp.add(30 minutes);
 
             emit DefendSuccess(attacker, defender);
 
+            return 1;
+
         } else {
-
             emit Draw(attacker, defender);
-
+            return 2;
         }
     }
 }
