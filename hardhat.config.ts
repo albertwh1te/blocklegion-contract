@@ -12,8 +12,8 @@ const config: HardhatUserConfig = {
   // defaultNetwork: "ftm",
   //defaultNetwork: "mumbai",
   // defaultNetwork: "hardhat",
-  // defaultNetwork: "localhost",
-  defaultNetwork: "goerli",
+  defaultNetwork: "localhost",
+  // defaultNetwork: "goerli",
 
   solidity: "0.8.17",
 
