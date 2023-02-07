@@ -1,11 +1,13 @@
 import { ethers } from "hardhat";
 
-let soldierAddress = "0x12AA426F676e454763518B51A7BE4D6d7d23f60B";
-let battleAddress = "0xAb4F2B6BABfeF633f673aC996C41F96Ec4A7863B";
-let legionAddress = "0x7C54C07410b84c13D64A4CB9618A1ff745dcd619";
+let soldierAddress = '0xf01fC34bEA21a6f4C1860e8666C7e2aF90956922'
+let battleAddress= '0x93DEF6490d992E48174DC7fB45C1681927d574B0'
+let legionAddress='0x0c40b06C9AEA53467Ab83635A59c7C211238eB91'
+
+
 
 async function main() {
-  console.log("wwwwww");
+  console.log("start make combat");
   const accounts = await ethers.getSigners();
 
   const Soldier = await ethers.getContractFactory("BlockSoldier");

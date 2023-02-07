@@ -13,7 +13,7 @@ const config: HardhatUserConfig = {
   //defaultNetwork: "mumbai",
   // defaultNetwork: "hardhat",
   // defaultNetwork: "localhost",
- defaultNetwork: "goerli",
+  defaultNetwork: "goerli",
 
   solidity: "0.8.17",
 

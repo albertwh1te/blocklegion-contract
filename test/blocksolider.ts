@@ -221,6 +221,8 @@ describe("BlockSolider", function () {
         value: ethers.utils.parseEther("0.005"),
       });
 
+      console.log(await legion.getLegionSoldiers(owner.address));
+
       await solider.connect(otherAccount).freeRecruit();
 
       expect(await solider.balanceOf(owner.address)).to.equal(3);
@@ -255,6 +257,8 @@ describe("BlockSolider", function () {
 
       console.log(await battle.getSoldierAttackPower(0));
       console.log(await battle.getSoldierDefensePower(0));
+
+      // console.log(await legion.getLegionSoldiers(owner.address));
     });
   });
 });

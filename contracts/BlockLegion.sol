@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -32,8 +34,11 @@ contract BlockLegion is Ownable {
     event WarOutcome(
         address indexed attacker,
         address indexed defender,
+        string attakcerName,
+        string defenderName,
         uint outcome,
-        uint captive_id
+        uint captive_id,
+        uint time
     );
 
     constructor(address _soldier) {
@@ -43,6 +48,21 @@ contract BlockLegion is Ownable {
     /*********************
      * EXTERNAL FUNCTION *
      *********************/
+
+    function getLegionSoldiers(
+        address _user
+    ) external view returns (uint[] memory infos) {
+        uint totalySoldier = soldier.balanceOf(_user);
+        infos = new uint[](totalySoldier.mul(4));
+        for (uint i = 0; i < totalySoldier.mul(4); i += 4) {
+            console.log("current", i);
+            uint soliderId = soldier.tokenOfOwnerByIndex(_user, i.div(4));
+            infos[i] = soliderId;
+            infos[i + 1] = soldier.task(soliderId);
+            infos[i + 2] = battleSystem.getSoldierAttackPower(soliderId);
+            infos[i + 3] = battleSystem.getSoldierDefensePower(soliderId);
+        }
+    }
 
     function setBattleSystem(address _battleSystem) external onlyOwner {
         battleSystem = IBattleSystem(_battleSystem);
@@ -103,17 +123,41 @@ contract BlockLegion is Ownable {
 
             nextDefendTime[defender] = block.timestamp.add(30 minutes);
 
-            emit WarOutcome(attacker, defender, 0, soldier_index);
+            emit WarOutcome(
+                attacker,
+                defender,
+                legionName[attacker],
+                legionName[defender],
+                0,
+                soldier_index,
+                block.timestamp
+            );
 
             return (0, soldier_index);
         } else if (getAttackPower(attacker) < getDefensePower(defender)) {
             nextDefendTime[defender] = block.timestamp.add(30 minutes);
 
-            emit WarOutcome(attacker, defender, 1, 0);
+            emit WarOutcome(
+                attacker,
+                defender,
+                legionName[attacker],
+                legionName[defender],
+                1,
+                0,
+                block.timestamp
+            );
 
             return (1, 0);
         } else {
-            emit WarOutcome(attacker, defender, 2, 0);
+            emit WarOutcome(
+                attacker,
+                defender,
+                legionName[attacker],
+                legionName[defender],
+                2,
+                0,
+                block.timestamp
+            );
 
             return (2, 0);
         }

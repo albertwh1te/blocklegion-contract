@@ -46,6 +46,8 @@ async function main() {
 
   console.log(balance, balance2);
 
+  console.log(await legion.getLegionSoldiers(accounts[0].address));
+
   console.log(
     `let soldierAddress = '${soldier.address}' \nlet battleAddress= '${battle.address}' \nlet legionAddress='${legion.address}'`
   );
