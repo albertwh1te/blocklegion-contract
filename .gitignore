@@ -126,3 +126,5 @@ typechain-types
 cache
 artifacts
 
+# ignore script files
+*.py
