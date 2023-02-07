@@ -47,7 +47,7 @@ async function main() {
   console.log(balance, balance2);
 
   console.log(
-    `let soldierAddress = '${soldier.address}' \nlet battleAddress= '${battle.address}' \nlet legionAddress: '${legion.address}'`
+    `let soldierAddress = '${soldier.address}' \nlet battleAddress= '${battle.address}' \nlet legionAddress='${legion.address}'`
   );
 }
 

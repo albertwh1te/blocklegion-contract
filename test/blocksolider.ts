@@ -246,11 +246,15 @@ describe("BlockSolider", function () {
 
       let ap = await legion.getAttackPower(owner.address);
       let dp = await legion.getDefensePower(owner.address);
-      
+
       console.log(ap, dp);
+
       let ap2 = await legion.getAttackPower(otherAccount.address);
       let dp2 = await legion.getDefensePower(otherAccount.address);
       console.log(ap2, dp2);
+
+      console.log(await battle.getSoldierAttackPower(0));
+      console.log(await battle.getSoldierDefensePower(0));
     });
   });
 });
