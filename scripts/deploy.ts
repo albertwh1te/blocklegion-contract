@@ -13,10 +13,12 @@ async function main() {
   const Legion = await ethers.getContractFactory("BlockLegion");
   const legion = await Legion.deploy(soldier.address);
 
+  // every account recruit 
   await soldier.freeRecruit();
   await soldier.recruitClass(2, { value: ethers.utils.parseEther("0.005") });
 
   await soldier.connect(accounts[1]).freeRecruit();
+  await soldier.connect(accounts[2]).freeRecruit();
 
   await legion.setBattleSystem(battle.address);
   await soldier.setLegionAddress(legion.address);
@@ -43,6 +45,13 @@ async function main() {
   await legion.deployTransaction.wait(6);
   balance = await soldier.balanceOf(accounts[0].address);
   balance2 = await soldier.balanceOf(accounts[1].address);
+
+  console.log("try change");
+  await soldier.changeTask(0, 1);
+
+  console.log("set legion name");
+  await legion.setLegionName("Iron Legion");
+
 
   console.log(balance, balance2);
 

@@ -1,34 +1,51 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
 
-let soldierAddress = '0xf01fC34bEA21a6f4C1860e8666C7e2aF90956922'
-let battleAddress= '0x93DEF6490d992E48174DC7fB45C1681927d574B0'
-let legionAddress='0x0c40b06C9AEA53467Ab83635A59c7C211238eB91'
-
-
+let soldierAddress = "0x1f57a9A6199aDCAc53c738fBAbe451cD33c5b076";
+let battleAddress = "0xa301712ffc2258F4de2EeCFe20AA4cC156804c18";
+let legionAddress = "0x6CAf91E6167799f01ac7a56b0ec44C7216D20140";
 
 async function main() {
   console.log("start make combat");
-  const accounts = await ethers.getSigners();
+  const accounts = await hre.ethers.getSigners();
 
-  const Soldier = await ethers.getContractFactory("BlockSoldier");
-  const soldier = await Soldier.attach(soldierAddress);
+  console.log(legionAddress, "load soldier");
+  const soldier = await hre.ethers.getContractAt(
+    "BlockSoldier",
+    soldierAddress
+  );
 
-  console.log(soldier.address);
-
-  const Battle = await ethers.getContractFactory("BattleSystem");
+  console.log(legionAddress, "load battle");
+  const Battle = await hre.ethers.getContractFactory("BattleSystem");
   const battle = await Battle.attach(battleAddress);
   console.log(battle.address);
 
-  console.log(legionAddress, "wwww");
-  const Legion = await ethers.getContractFactory("BlockLegion");
-  const legion = await Legion.attach(legionAddress);
+  console.log(legionAddress, "load legion");
+  const legion = await hre.ethers.getContractAt("BlockLegion", legionAddress);
   console.log(legion.address);
 
   let balance = await soldier.balanceOf(accounts[0].address);
   let balance2 = await soldier.balanceOf(accounts[1].address);
+  let balance3 = await soldier.balanceOf(accounts[2].address);
 
-  //  make war here
-  let result = await legion.connect(accounts[0]).war(accounts[1].address);
+  console.log(balance, balance2, balance3);
+
+  // console.log("try mint");
+  // await soldier.connect(accounts[1]).freeRecruit();
+  // await soldier.connect(accounts[2]).freeRecruit();
+
+  console.log("try change");
+  await soldier.changeTask(0, 1);
+
+  console.log("set legion name");
+  await legion.connect(accounts[0]).setLegionName("Iron Legion");
+
+  // start war here
+  if (balance3.lt(0)) {
+    console.log("recruit", accounts[3].address);
+    await soldier.connect(accounts[3]).freeRecruit();
+  }
+
+  let result = await legion.connect(accounts[3]).war(accounts[0].address);
   console.log("war", result);
 
   console.log("level", await soldier.get_solider_level(0));
@@ -41,6 +58,8 @@ async function main() {
 
   console.log(await legion.getAttackPower(accounts[0].address));
   console.log(await legion.getDefensePower(accounts[0].address));
+  console.log(await legion.getAttackPower(accounts[3].address));
+  console.log(await legion.getDefensePower(accounts[3].address));
 
   console.log("battle");
   console.log(await battle.getSoldierAttackPower(1));

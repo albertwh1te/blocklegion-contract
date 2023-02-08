@@ -24,7 +24,7 @@ describe("BlockSolider", function () {
   }
 
   async function deployAll() {
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, otherAccount, account3] = await ethers.getSigners();
 
     const Solider = await ethers.getContractFactory("BlockSoldier");
     const solider = await Solider.deploy();
@@ -39,7 +39,7 @@ describe("BlockSolider", function () {
     await legion.setBattleSystem(battle.address);
     await solider.setLegionAddress(legion.address);
 
-    return { solider, battle, legion, owner, otherAccount };
+    return { solider, battle, legion, owner, otherAccount, account3 };
   }
 
   describe("Soldier Function", function () {
@@ -258,7 +258,7 @@ describe("BlockSolider", function () {
       console.log(await battle.getSoldierAttackPower(0));
       console.log(await battle.getSoldierDefensePower(0));
 
-      // console.log(await legion.getLegionSoldiers(owner.address));
+      console.log(await legion.getLegionSoldiers(owner.address));
     });
   });
 });

@@ -46,6 +46,18 @@
       },
       {
         "indexed": false,
+        "internalType": "string",
+        "name": "attakcerName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "defenderName",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "outcome",
         "type": "uint256"
@@ -54,6 +66,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "captive_id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "time",
         "type": "uint256"
       }
     ],
@@ -106,6 +124,25 @@
         "internalType": "uint256",
         "name": "defensePower",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getLegionSoldiers",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "infos",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
