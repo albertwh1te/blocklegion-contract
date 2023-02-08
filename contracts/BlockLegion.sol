@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -55,7 +53,6 @@ contract BlockLegion is Ownable {
         uint totalySoldier = soldier.balanceOf(_user);
         infos = new uint[](totalySoldier.mul(4));
         for (uint i = 0; i < totalySoldier.mul(4); i += 4) {
-            console.log("current", i);
             uint soliderId = soldier.tokenOfOwnerByIndex(_user, i.div(4));
             infos[i] = soliderId;
             infos[i + 1] = soldier.task(soliderId);
@@ -80,7 +77,7 @@ contract BlockLegion is Ownable {
         uint soldierNumber = soldier.balanceOf(_address);
         attackPower = 0;
         for (uint i = 0; i < soldierNumber; i++) {
-            uint soliderId = soldier.tokenOfOwnerByIndex(msg.sender, i);
+            uint soliderId = soldier.tokenOfOwnerByIndex(_address, i);
             if (soldier.task(soliderId) == uint(BlockSoldier.TASK.ATTACK)) {
                 attackPower = attackPower.add(
                     battleSystem.getSoldierAttackPower(soliderId)
@@ -95,7 +92,7 @@ contract BlockLegion is Ownable {
         uint soldierNumber = soldier.balanceOf(_address);
         defensePower = 0;
         for (uint i = 0; i < soldierNumber; i++) {
-            uint soliderId = soldier.tokenOfOwnerByIndex(msg.sender, i);
+            uint soliderId = soldier.tokenOfOwnerByIndex(_address, i);
             if (soldier.task(soliderId) == uint(BlockSoldier.TASK.DEDEND)) {
                 defensePower = defensePower.add(
                     battleSystem.getSoldierDefensePower(soliderId)
