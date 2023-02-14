@@ -51,13 +51,14 @@ contract BlockLegion is Ownable {
         address _user
     ) external view returns (uint[] memory infos) {
         uint totalySoldier = soldier.balanceOf(_user);
-        infos = new uint[](totalySoldier.mul(4));
-        for (uint i = 0; i < totalySoldier.mul(4); i += 4) {
-            uint soliderId = soldier.tokenOfOwnerByIndex(_user, i.div(4));
+        infos = new uint[](totalySoldier.mul(5));
+        for (uint i = 0; i < totalySoldier.mul(5); i += 5) {
+            uint soliderId = soldier.tokenOfOwnerByIndex(_user, i.div(5));
             infos[i] = soliderId;
-            infos[i + 1] = soldier.task(soliderId);
-            infos[i + 2] = battleSystem.getSoldierAttackPower(soliderId);
-            infos[i + 3] = battleSystem.getSoldierDefensePower(soliderId);
+            infos[i + 1] = soldier.class(soliderId);
+            infos[i + 2] = soldier.task(soliderId);
+            infos[i + 3] = battleSystem.getSoldierAttackPower(soliderId);
+            infos[i + 4] = battleSystem.getSoldierDefensePower(soliderId);
         }
     }
 
